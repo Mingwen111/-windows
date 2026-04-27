@@ -1,0 +1,946 @@
+{
+  "document": {
+    "title": "Zion 股票事件分析平台产品需求文档",
+    "subtitle": "Stock Event Insight",
+    "product": "Zion",
+    "version": "V1.8",
+    "stage": "Demo",
+    "platform": "网页端（Web）",
+    "status": "草稿",
+    "date": "2025-04",
+    "author": "产品经理"
+  },
+
+  "revision_history": [
+    { "version": "V1.0", "date": "2025-04", "changes": "初版创建，覆盖 Demo 阶段核心需求", "author": "产品经理" },
+    { "version": "V1.1", "date": "2025-04", "changes": "新增推荐筛选页、精选区、侧边栏", "author": "产品经理" },
+    { "version": "V1.2", "date": "2025-04", "changes": "重构详情页布局；关键点全屏弹窗；可视化图表规范", "author": "产品经理" },
+    { "version": "V1.3", "date": "2025-04", "changes": "推荐页对齐设计稿；取消看涨/看跌；侧边栏按钮控制；AI面板时间联动+全屏弹窗", "author": "产品经理" },
+    { "version": "V1.4", "date": "2025-04", "changes": "新增登录页；侧边栏重构为Zion导航；拖拽收藏；修复悬浮卡片；AI报告骨架；股票清单", "author": "产品经理" },
+    { "version": "V1.5", "date": "2025-04", "changes": "侧边栏悬浮收藏/删除/撤销；因果链改为事件卡片追溯+面包屑；细化详情页各Tab交互", "author": "产品经理" },
+    { "version": "V1.6", "date": "2025-04", "changes": "按页面层级重组文档结构；重构AI分析面板；AI报告Markdown格式；因果链深度改为总深度3层", "author": "产品经理" },
+    { "version": "V1.7", "date": "2025-04", "changes": "剥离演示数据为独立附录；补全数据来源规范；新增验收标准章节；新增状态描述章节；补全搜索机制；丰富数据字典；新增可选埋点方案", "author": "产品经理" },
+    { "version": "V1.8", "date": "2025-04", "changes": "修正AI报告弹窗为挤压K线图模式（非覆盖）；K线图宽度改为自适应；下半区Tab栏视口高度约束为1/5；尺寸数值改为参考值；AI报告改为文章长文形态；新增精选与筛选推荐逻辑及数据来源", "author": "产品经理" }
+  ],
+
+  "product_overview": {
+    "positioning": {
+      "product_name": "Zion",
+      "target_users": "想接触股票但没有投资经验的普通理财者",
+      "core_pain_points": [
+        "专业术语看不懂",
+        "财经事件与股价关联难以理解",
+        "难以做出投资决策"
+      ],
+      "core_value": "K线+关键点事件可视化 + AI结构化分析报告，降低股票信息理解门槛",
+      "form": "网页端（Web）· 静态演示 Demo"
+    },
+    "information_architecture": [
+      { "level": "L1", "module": "登录页", "section": "第2章" },
+      { "level": "L1", "module": "推荐发现页", "section": "第3章" },
+      { "level": "L1", "module": "股票详情页", "section": "第4章" },
+      { "level": "L2", "module": "关键点悬浮卡片（Hover）", "section": "4.3.2" },
+      { "level": "L2", "module": "AI 分析摘要卡片弹窗", "section": "4.4.3" },
+      { "level": "L2", "module": "关键点详情全屏弹窗", "section": "4.5" },
+      { "level": "L3", "module": "因果链探索页面", "section": "第5章" },
+      { "level": "全局", "module": "侧边导航（所有L1页面共用）", "section": "第6章" }
+    ],
+    "page_flow": [
+      "打开网站 → 登录页（L1）",
+      "登录成功 → 推荐发现页（L1）",
+      "点击精选卡片或瀑布流卡片 → 股票详情页（L1）",
+      "在K线图悬浮关键点 → 关键点悬浮卡片（L2）",
+      "点击悬浮卡片「查看详情」→ 关键点详情全屏弹窗（L2）",
+      "点击关键点弹窗Tab栏「因果链」→ 因果链探索页（L3）",
+      "点击AI分析面板摘要卡片「查看详情」→ AI分析摘要卡片弹窗（L2，侧边导航收起、K线图收窄）"
+    ],
+    "demo_scope": [
+      { "feature": "股票数量", "demo_value": "20只真实股票", "note": "A股14只，港股3只，美股3只" },
+      { "feature": "数据来源", "demo_value": "静态硬编码", "note": "不接入第三方API，所有数据预置于前端代码中" },
+      { "feature": "用户系统", "demo_value": "Demo简化版", "note": "手机号/微信扫码，验证码统一123456" },
+      { "feature": "AI分析", "demo_value": "静态Markdown文本", "note": "按结构化骨架预置，不调用真实AI接口" },
+      { "feature": "AI报告图表", "demo_value": "静态数据渲染", "note": "ECharts/Chart.js渲染，非图片或表格" },
+      { "feature": "收藏功能", "demo_value": "Session内持久", "note": "刷新后重置，支持悬浮删除与3秒撤销" },
+      { "feature": "关键点弹窗", "demo_value": "静态预置", "note": "每只股票预置5-8个关键点含完整数据" },
+      { "feature": "因果链", "demo_value": "静态预置，总深度3层", "note": "每只股票至少1条可钻取链路" },
+      { "feature": "新闻详情", "demo_value": "就地展开", "note": "点击新闻卡片在原位展开，不跳新页面" }
+    ]
+  },
+
+  "pages": {
+    "login_page": {
+      "id": "P-LOGIN",
+      "level": "L1",
+      "title": "登录页",
+      "purpose": "用户进入Zion的第一个页面，提供手机号登录和微信扫码两种方式",
+      "layout": [
+        { "area": "品牌区", "position": "顶部居中", "content": "Zion Logo + 产品名称 + 一句话介绍" },
+        { "area": "登录方式切换", "position": "中部", "content": "「手机号登录」和「微信扫码登录」Tab，默认选中手机号登录" },
+        { "area": "登录内容区", "position": "中部主体", "content": "根据选中Tab展示对应表单或二维码" },
+        { "area": "底部合规", "position": "页面底部", "content": "「本平台内容仅供参考，不构成投资建议」免责声明" }
+      ],
+      "phone_login": {
+        "fields": [
+          { "name": "手机号输入框", "type": "文本输入", "placeholder": "请输入手机号", "rule": "仅允许数字，超11位截断" },
+          { "name": "获取验证码按钮", "type": "按钮", "behavior": "点击后进入60秒倒计时；Toast提示「验证码已发送（Demo：123456）」" },
+          { "name": "验证码输入框", "type": "文本输入", "placeholder": "请输入验证码" },
+          { "name": "登录/注册按钮", "type": "主操作按钮", "rule": "手机号不足11位或验证码不足6位时置灰；验证码为123456时登录成功，否则提示「验证码错误」" },
+          { "name": "输入框下方提示", "type": "灰色小字", "content": "「未注册的手机号将自动注册」" }
+        ]
+      },
+      "wechat_login": {
+        "status": "暂未开放",
+        "qr_opacity": 0.4,
+        "note": "切换到此Tab不影响手机号Tab的已输入内容"
+      }
+    },
+
+    "recommend_page": {
+      "id": "P-RECOMMEND",
+      "level": "L1",
+      "title": "推荐发现页",
+      "layout": [
+        { "area": "侧边导航", "position": "最左侧固定", "content": "Zion全局导航" },
+        { "area": "顶部搜索框", "position": "主内容区顶部", "content": "股票搜索，本地实时过滤瀑布流" },
+        { "area": "Select for You区", "position": "搜索框下方", "content": "3张精选推荐横向卡片" },
+        { "area": "筛选栏", "position": "精选区下方", "content": "领域Chip + 右侧市场/排序下拉" },
+        { "area": "瀑布流卡片区", "position": "筛选栏下方", "content": "20只股票Masonry 4列瀑布流" }
+      ],
+      "search": {
+        "scope": "recommend_page",
+        "placeholder": "搜索股票或代码...",
+        "trigger": "输入框任意字符变化时即时触发，无需按回车",
+        "match_fields": ["name（股票名称）", "stock_id（完整股票代码）"],
+        "algorithm": "包含匹配（contains），忽略大小写；股票代码额外支持前缀匹配",
+        "range": "仅过滤当前瀑布流20只股票，不触发远程搜索",
+        "filter_relation": "与筛选栏（领域/市场/排序）为AND关系，同时生效",
+        "response_time": "≤100ms",
+        "empty_state": "展示空状态插图 + 文案「未找到相关股票，请尝试其他关键词」",
+        "clear_behavior": "清空输入框后恢复全量瀑布流",
+        "highlight": "匹配命中的文字在卡片中高亮显示（黄色背景）",
+        "exclusion": "不影响Select for You精选区（始终显示3张精选卡片）"
+      },
+      "sidebar_search": {
+        "scope": "sidebar_navigation",
+        "trigger": "输入框字符变化时即时触发",
+        "match_fields": ["收藏列表和最近列表中的股票名称与代码"],
+        "range": "仅在收藏+最近条目中过滤，不跨库搜索",
+        "empty_state": "列表区域显示「无匹配结果」灰色小字"
+      },
+      "featured_section": {
+        "title": "Select for You",
+        "card_count": 3,
+        "layout": "横向等宽排列",
+        "click_action": "进入股票详情页，加入侧边导航「最近」",
+        "card_fields": [
+          { "field": "股票代码方块", "desc": "左上角圆角小方块，内含代码缩写" },
+          { "field": "股票名称", "desc": "粗体大字" },
+          { "field": "股票代码", "desc": "名称下方灰色小字" },
+          { "field": "精选理由", "desc": "卡片下半部分，1-2句话描述近期亮点，≤60字" }
+        ],
+        "hover_effect": "投影加深 + translateY -2px",
+        "recommendation_logic": {
+          "demo_impl": "人工编辑指定，is_featured=true，全局固定3只",
+          "v2_framework": [
+            {
+              "dimension": "候选池",
+              "rule": "近30日有重大事件关键点、非停牌、涨跌幅在合理区间",
+              "demo": "手工指定20只池中的3只",
+              "v2": "全量A股/港股/美股，按事件密度预筛"
+            },
+            {
+              "dimension": "事件热度权重",
+              "rule": "近7日关键点数量×1.5 + 近30日关键点数量×1.0",
+              "demo": "静态配置hot_score字段",
+              "v2": "实时计算，每日收盘后刷新"
+            },
+            {
+              "dimension": "AI报告完整度",
+              "rule": "优先选出ai_report覆盖日/周/月三周期均完整的股票",
+              "demo": "手工保证3只精选均有完整报告",
+              "v2": "自动校验report完整性字段"
+            },
+            {
+              "dimension": "市场多样性",
+              "rule": "3只精选中覆盖不同市场和领域；同市场不超过2只，同领域不超过1只",
+              "demo": "手工保证宁德时代(A股)+腾讯(港股)+英伟达(美股)",
+              "v2": "算法约束市场和领域分布"
+            },
+            {
+              "dimension": "内容可读性",
+              "rule": "精选理由面向非专业用户，事件驱动角度，≤60字",
+              "demo": "人工撰写",
+              "v2": "人工撰写，AI辅助润色"
+            },
+            {
+              "dimension": "刷新周期",
+              "rule": "每周由编辑手动更新，重大市场事件时可随时调整",
+              "demo": "静态不刷新",
+              "v2": "每周一自动触发推荐任务，编辑审核后发布"
+            }
+          ]
+        }
+      },
+      "filter_bar": {
+        "controls": [
+          {
+            "name": "领域筛选",
+            "type": "Chip单选",
+            "options": ["全部", "科技", "新能源", "半导体", "消费", "医药", "金融", "能源"],
+            "default": "全部"
+          },
+          {
+            "name": "市场",
+            "type": "下拉单选",
+            "options": ["全部", "A股", "港股", "美股"],
+            "default": "全部"
+          },
+          {
+            "name": "排序",
+            "type": "下拉单选",
+            "options": ["热门", "事件最多", "涨幅最大", "跌幅最大"],
+            "default": "热门"
+          }
+        ],
+        "logic": "三维筛选AND关系，实时过滤瀑布流；结果为空时展示空状态提示",
+        "sort_logic": [
+          {
+            "sort": "热门",
+            "field": "hot_score",
+            "order": "降序",
+            "data_source": "Demo：人工赋值0-100整数；V2.0：基于近7日浏览次数+收藏次数+关键点热度综合计算",
+            "demo_impl": "硬编码于stockData.js"
+          },
+          {
+            "sort": "事件最多",
+            "field": "key_points.length",
+            "order": "降序",
+            "data_source": "关键点数组长度，实时计算",
+            "demo_impl": "前端实时计算"
+          },
+          {
+            "sort": "涨幅最大",
+            "field": "change_pct",
+            "order": "降序",
+            "data_source": "行情数据，每日收盘后更新；Demo静态",
+            "demo_impl": "硬编码于stockData.js"
+          },
+          {
+            "sort": "跌幅最大",
+            "field": "change_pct",
+            "order": "升序",
+            "data_source": "行情数据，同上",
+            "demo_impl": "硬编码于stockData.js"
+          }
+        ]
+      },
+      "waterfall": {
+        "layout": "Masonry",
+        "columns": 4,
+        "column_gap_px": 16,
+        "card_height": "由内容决定",
+        "card_fields": [
+          { "field": "股票代码小方块", "desc": "左上角圆角方块，灰底小字" },
+          { "field": "股票名称", "desc": "大号加粗" },
+          { "field": "完整股票代码", "desc": "名称下方灰色正文" },
+          { "field": "市场·领域标签", "desc": "底部灰色小字，点分隔，如「A股 · 新能源」" }
+        ],
+        "click_action": "进入股票详情页，股票加入侧边导航「最近」"
+      }
+    },
+
+    "stock_detail_page": {
+      "id": "P-DETAIL",
+      "level": "L1",
+      "title": "股票详情页",
+      "scroll_model": "单页长文档，整页跟随浏览器原生滚动条统一滚动，无区域内独立滚动",
+      "layout": {
+        "note": "以下宽度比例均为参考值，具体由UI决定",
+        "areas": [
+          { "area": "侧边导航", "position": "最左侧固定", "width_ref": "收起约60px / 展开约240px（参考值，UI决定）", "content": "Zion全局导航" },
+          { "area": "K线图区", "position": "上半区左侧", "width_ref": "约65%（随侧边导航和AI弹窗自适应）", "content": "K线图 + 关键点标记 + 图表控件" },
+          { "area": "AI分析面板", "position": "上半区右侧", "width_ref": "约35%（参考值，UI决定）", "content": "AI分析摘要卡片 + 底部问答输入框" },
+          { "area": "多Tab信息区", "position": "上半区下方，页面持续向下", "width_ref": "100%", "content": "公司简介 / 市场情绪 / 新闻与政策 / 资金流向" }
+        ]
+      },
+      "header_bar": {
+        "fields": ["股票名称（大号加粗）", "股票代码", "市场标签（A股/港股/美股）", "当前价格", "涨跌额", "涨跌幅（涨红跌绿）"]
+      },
+      "kline_chart": {
+        "controls": [
+          { "name": "时间周期", "type": "下拉选择", "options": ["日K", "周K", "月K"], "linkage": "与右侧AI分析面板时间周期双向联动" },
+          { "name": "均线类型", "type": "下拉选择", "options": ["简单均线（SMA）", "指数均线（EMA）", "布林带（BOLL）"] },
+          { "name": "均线周期", "type": "下拉选择", "options": ["5日均线", "10日均线", "20日均线", "60日均线"] }
+        ],
+        "key_points": {
+          "marker_shape": "菱形",
+          "colors": { "利好": "绿色", "利空": "红色", "中性": "灰色" },
+          "aggregation": "同日期多个关键点聚合，取最高优先级颜色（利空>利好>中性），右上角加数量角标",
+          "hover_card": {
+            "hover_zone": "圆点 + 朝卡片方向透明热区 + 卡片，三者构成连续Hover Zone",
+            "dismiss_delay_ms": 300,
+            "fields": ["标题（最多2行截断）", "时间（YYYY年MM月DD日）", "核心事件短述（≤50字）", "AI标签（利好/利空/中性+颜色）", "「查看详情」按钮"],
+            "animation": "卡片从关键点位置淡入上移（约100ms），优先向上弹出，空间不足时向下"
+          }
+        }
+      },
+      "ai_panel": {
+        "version_note": "V1.6重构为摘要卡片+弹窗形态；V1.8修正弹窗为挤压K线图模式",
+        "default_state": {
+          "header_left": "标题「AI分析」",
+          "header_right": "时间周期下拉（今日/本周/本月），与K线图日K/周K/月K双向联动",
+          "summary_card_fields": [
+            { "field": "时间周期标签", "desc": "如「日报」，灰色小字" },
+            { "field": "报告标题", "desc": "当期AI分析报告的标题，粗体，1行" },
+            { "field": "概述", "desc": "2-3句核心结论，灰色正文，最多3行截断" },
+            { "field": "「点击查看详情」", "desc": "点击触发AI分析弹窗（L2）" }
+          ],
+          "qa_input": {
+            "placeholder": "问问AI关于这支股票…",
+            "demo_mode": "预置5-10组问答，关键词匹配返回对应答案，无匹配返回通用默认答案",
+            "max_history_rounds": 5
+          }
+        },
+        "modal": {
+          "id": "MODAL-AI-REPORT",
+          "level": "L2",
+          "trigger": "点击摘要卡片「点击查看详情」",
+          "layout_behavior": "弹窗从AI分析面板左边缘向左滑出，插入到K线图与AI面板之间，K线图被向左挤压收缩",
+          "three_column_layout": "K线图（缩窄，左）| AI报告弹窗（中）| AI分析面板（右，原位不动）",
+          "slide_direction": "从AI分析面板左边缘向左滑入，插入K线图右侧",
+          "kline_behavior": "K线图宽度自动减少（挤压，非覆盖）；侧边导航收起后释放的宽度补偿部分缩窄幅度",
+          "ai_panel_behavior": "保持展开，仍可见摘要卡片，弹窗紧贴其左侧插入，AI面板不收起不移位",
+          "sidebar_linkage": "弹窗打开时侧边导航自动收起；弹窗关闭后侧边导航恢复，K线图恢复原始宽度",
+          "width_ref": "参考值：与AI分析面板等宽；具体由UI决定",
+          "content": "可垂直滚动，展示完整AI分析报告（文章长文形态）",
+          "close": "点击弹窗右上角关闭按钮，或按Esc键",
+          "animation_ref": "弹窗从右向左滑入，K线图同步向左收缩，两者动画同步；参考时长200ms ease-out，具体由UI决定"
+        },
+        "report_format": {
+          "version_note": "V1.8修正：报告以「文章」形态呈现，不使用卡片包裹每段内容，整体像一篇流畅的分析文章",
+          "rendering": "Markdown渲染",
+          "forbidden": [
+            "禁止用普通表格呈现量化数据",
+            "禁止用卡片边框包裹单段文字",
+            "禁止使用文字表情符号替代数据可视化"
+          ],
+          "chart_rule": "图表紧跟对应文字段落之后，宽度撑满弹窗内容区，高度参考值不超过内容区可视高度40%，具体由UI决定",
+          "sections": [
+            {
+              "id": "head",
+              "title": "报告标题行",
+              "format": "大号标题 + 灰色副标题行",
+              "content": "股票名称、报告类型、交易日期、市场状态（开盘中/收盘用行内Badge标注）",
+              "note": "文章标题，不加卡片边框"
+            },
+            {
+              "id": "s1",
+              "title": "今日表现",
+              "format": "H2标题 + 正文段落 + 内联迷你图表",
+              "content": "价格走势描述；涨跌幅数字旁内联迷你柱状图（正值绿色，负值红色）；盘中高低点用正文数字说明"
+            },
+            {
+              "id": "s2",
+              "title": "关键财务与估值指标",
+              "format": "H2标题 + 正文列表 + 图表（紧接列表后）",
+              "content": "P/E、EPS、股息率、总市值等；下方紧接横向对比条形图（当前值 vs 行业均值 vs 5年均值），无卡片边框"
+            },
+            {
+              "id": "s3",
+              "title": "市场动向",
+              "format": "H2标题 + 正文段落 + 评级饼图",
+              "content": "下次财报日期、支撑位/压力位；分析师评级比例用饼图展示，图表直接嵌在段落下方"
+            },
+            {
+              "id": "s4",
+              "title": "影响因素分析",
+              "format": "H2标题 + 多段正文",
+              "content": "每段围绕一个关键事件展开，事件名称加粗高亮，用自然语言阐述与股价的因果关系；报告核心，篇幅最长"
+            },
+            {
+              "id": "s5",
+              "title": "潜在风险因素",
+              "format": "H2标题 + 有序列表",
+              "content": "3条主要风险，每条1-2句说明；列表直接写在文章中，无卡片"
+            },
+            {
+              "id": "foot",
+              "title": "免责声明与来源",
+              "format": "小号灰色正文",
+              "content": "信息来源注释 + 免责声明，作为文章结尾段落"
+            }
+          ]
+        }
+      },
+      "keypoint_modal": {
+        "id": "MODAL-KEYPOINT",
+        "level": "L2",
+        "size_ref": "屏幕宽度约90%、高度约85%，居中（参考值，具体由UI决定）",
+        "open_animation_ref": "scale 0.95→1.0 + opacity 0→1，约200ms（参考值，UI决定）",
+        "close_trigger": ["右上角关闭按钮", "点击遮罩"],
+        "layout": {
+          "note": "以下宽度为参考值，具体比例由UI决定",
+          "header": { "width": "全宽", "content": "「关键点详情」+ 关闭按钮" },
+          "left_panel": {
+            "width_ref": "约30%（参考值，UI决定）",
+            "content": "垂直时间轴 + 关联事件列表 + 筛选控件",
+            "timeline": "垂直时间轴，事件块挂载在轴右侧，当前选中事件高亮",
+            "filters": [
+              { "name": "类型筛选", "type": "下拉", "options": ["全部", "利好", "利空", "中性"] },
+              { "name": "时间范围", "type": "下拉", "options": ["近5日", "近10日", "近30日"] }
+            ]
+          },
+          "right_panel": {
+            "width_ref": "约70%（参考值，UI决定）",
+            "tabs": [
+              { "tab": "AI总结", "content": "AI标签 + 核心判断 + 短/中/长期影响", "format": "文章形态Markdown + 可视化图表" },
+              { "tab": "数据快照", "content": "成交量、换手率、市值变化、市盈率/市净率", "format": "ECharts图表（柱状图/折线图/面积图/进度条）" },
+              { "tab": "相关新闻", "content": "2-5条关联新闻，就地展开", "format": "新闻列表卡片" },
+              { "tab": "资金流向", "content": "主力净流入/大单/中单/小单/占比", "format": "ECharts：正负柱状图+堆叠面积图+环形图" },
+              { "tab": "市场情绪", "content": "多空比例/情绪趋势/热度指数", "format": "ECharts：半圆仪表盘+折线图+对比条形图" },
+              { "tab": "因果链入口", "position": "Tab栏右侧按钮（不占Tab位置）", "action": "跳转L3因果链探索页，携带当前关键点为根节点" }
+            ]
+          }
+        }
+      },
+      "news_inline_expand": {
+        "description": "关键点弹窗内的新闻就地展开，不跳新页面",
+        "collapsed_fields": ["标题", "来源", "发布时间", "摘要（2行截断）"],
+        "expanded_fields": ["标题（粗体大字）", "来源媒体名称 + 「查看原文→」超链接", "完整发布时间", "完整正文（段落排版）", "「收起」按钮"],
+        "mutual_exclusion": true,
+        "expand_animation_ref": "高度从0平滑展开，约200ms ease（参考值，UI决定）"
+      },
+      "bottom_tabs": {
+        "version_note": "V1.8：Tab栏及其初始可见内容区域在视口中约占1/5的高度（参考值，具体由UI决定）；超出部分随页面向下滚动可见",
+        "scroll_model": "与整个详情页统一滚动，无独立内部滚动条",
+        "initial_height_ref": "约为视口高度的1/5（参考值，UI决定）",
+        "time_filter": { "options": ["日", "周", "月"], "affects": ["市场情绪", "资金流向"] },
+        "tabs": [
+          { "tab": "公司简介", "content": "成立时间、主营业务、核心产品、核心团队、行业赛道；配公司/产品图", "format": "长图文混排，关键数据用数字卡片突出" },
+          { "tab": "市场情绪", "content": "多空比例、情绪趋势（近15日）、热度指数（股票整体维度）", "format": "ECharts：半圆仪表盘+折线图+对比条形图" },
+          { "tab": "新闻与政策", "content": "近期新闻及行业政策，时间倒序，支持全部/新闻/政策子分类，点击就地展开详情", "format": "新闻列表，就地展开详情" },
+          { "tab": "资金流向", "content": "主力净流入/流出、大中小单构成、占比（股票整体维度）", "format": "ECharts：正负柱状图+堆叠面积图+环形图" }
+        ]
+      }
+    },
+
+    "causal_chain_page": {
+      "id": "P-CAUSAL",
+      "level": "L3",
+      "title": "因果链探索页",
+      "entry": "从关键点详情全屏弹窗（L2）的「因果链」入口进入",
+      "total_depth": 3,
+      "layers": [
+        { "layer": 3, "name": "顶层/根节点", "desc": "最上游原因事件，位于页面顶部", "example": "美发起关税制裁" },
+        { "layer": 2, "name": "中间层", "desc": "第1层事件的共同上游原因", "example": "新的关税政策实施" },
+        { "layer": 1, "name": "底层", "desc": "最底层原因事件，同层可并排多个", "example": "天气干旱 / 进口水果关税增加" },
+        { "layer": 0, "name": "结果事件", "desc": "底层下方延伸的结果", "example": "苹果涨价" }
+      ],
+      "interactions": [
+        "进入时以触发事件为当前焦点，展示其所在层级及上下游",
+        "点击任意事件节点 → 以该节点为新焦点，更新整个因果链视图，面包屑更新",
+        "顶部面包屑：股票名称 / 初始关键点标题 / 当前焦点事件；点击任一层级可返回",
+        "每个节点展示：时间、标题、事件内容摘要（2-4行，超出截断）",
+        "同一事件可挂接1-2个同层相关事件入口，点击进入新的因果链上下文",
+        "支持画布拖拽平移"
+      ]
+    }
+  },
+
+  "sidebar_navigation": {
+    "id": "G-SIDEBAR",
+    "title": "全局侧边导航",
+    "scope": "所有L1页面共用，登录页除外",
+    "structure": [
+      { "element": "Zion品牌标识", "action": "点击返回推荐发现页" },
+      { "element": "推荐", "action": "跳转推荐发现页，当前页高亮" },
+      { "element": "我的", "desc": "展开/收起子分组（搜索+收藏+最近），默认展开" },
+      { "element": "搜索框", "desc": "实时过滤收藏和最近列表" },
+      { "element": "收藏", "desc": "用户手动收藏的股票，支持悬浮取消收藏与删除（含3秒撤销）" },
+      { "element": "最近", "desc": "最近打开过详情页的股票，按时间倒序，最多10条，支持悬浮收藏/删除（含3秒撤销）" }
+    ],
+    "states": [
+      { "state": "收起态", "width_ref": "约60px（参考值，UI决定）", "content": "仅图标或首字；股票名称截断", "trigger": "点击展开按钮" },
+      { "state": "展开态", "width_ref": "约240px（参考值，UI决定）", "content": "完整文字；股票名称完整显示", "trigger": "点击收起按钮" }
+    ],
+    "animation_ref": "宽度过渡，参考时长200ms ease；具体由UI决定",
+    "special_behavior": "打开AI分析弹窗时侧边导航自动收起，释放宽度补偿K线图；弹窗关闭后恢复",
+    "item_hover": {
+      "show": "左侧收藏/取消收藏图标 + 右侧删除图标",
+      "favorite": "点击左侧图标一键收藏/取消收藏；最近列表收藏后同时出现在收藏分组",
+      "delete": "点击右侧删除图标 → 条目变红色确认态 → 再次点击确认删除 → Toast「已删除（3s）」+ 撤销按钮",
+      "drag_to_favorite": "从「最近」拖拽股票到「收藏」分组区域松开后加入收藏；已收藏则Toast提示「已在收藏夹中」"
+    }
+  },
+
+  "chart_spec": {
+    "library": "ECharts 或 Chart.js",
+    "rule": "所有可量化数据必须用图表展示，禁止用纯文字数字、普通表格或表情符号替代",
+    "chart_types": {
+      "ai_report": [
+        { "data": "涨跌幅", "chart": "迷你柱状图（单根）", "note": "正值绿色，负值红色，与文字内联展示" },
+        { "data": "分析师评级比例", "chart": "饼图或环形图", "note": "买入/持有/卖出三色，配图例" },
+        { "data": "估值对比（P/E等）", "chart": "横向对比条形图", "note": "当前值 vs 行业均值 vs 5年均值" },
+        { "data": "风险等级", "chart": "进度条式评分", "note": "0-100分，颜色渐变（绿→黄→红）" }
+      ],
+      "data_snapshot": [
+        { "data": "成交量", "chart": "柱状图", "note": "关键点前后10个交易日，当日高亮" },
+        { "data": "换手率", "chart": "折线图", "note": "关键点前后10日趋势" },
+        { "data": "市值变化", "chart": "面积图", "note": "涨填绿色、跌填红色" },
+        { "data": "市盈率/市净率", "chart": "数字卡片 + 行业均值对比进度条", "note": "当前值+行业均值+历史分位数" }
+      ],
+      "fund_flow": [
+        { "data": "主力净流入/流出", "chart": "正负柱状图", "note": "正值绿色（流入），负值红色（流出）" },
+        { "data": "大/中/小单构成", "chart": "堆叠面积图", "note": "各资金量级占比趋势" },
+        { "data": "流入/流出占比", "chart": "环形图", "note": "配数字标注" }
+      ],
+      "market_sentiment": [
+        { "data": "多空比例", "chart": "半圆仪表盘", "note": "从极度悲观到极度乐观，指针指向当前情绪" },
+        { "data": "情绪趋势", "chart": "折线图", "note": "前后15日情绪指数，标注关键点位置" },
+        { "data": "看涨/看跌人数", "chart": "对比条形图（Horizontal Bar）", "note": "两色横向进度条" },
+        { "data": "热度指数", "chart": "数字卡片 + 变化箭头", "note": "当前热度 + 同比变化百分比" }
+      ]
+    },
+    "general_rules": [
+      "利好：绿色系；利空：红色系；中性：灰色系",
+      "关键点在图表时间轴上用竖线标注位置",
+      "每张图表必须有图例或说明文字",
+      "图表高度参考值：不超过所在内容区60%；具体由UI决定",
+      "金额保留2位小数，百分比保留1位小数"
+    ]
+  },
+
+  "interaction_flows": [
+    { "from": "打开网站", "action": "—", "result": "→ 登录页（L1）" },
+    { "from": "登录页", "action": "手机号+验证码123456", "result": "→ 推荐发现页（L1）" },
+    { "from": "推荐发现页", "action": "搜索框输入关键词", "result": "→ 瀑布流实时本地过滤" },
+    { "from": "推荐发现页", "action": "切换领域/市场/排序筛选", "result": "→ 瀑布流实时过滤" },
+    { "from": "推荐发现页", "action": "点击精选卡片或瀑布流卡片", "result": "→ 股票详情页（L1），加入「最近」" },
+    { "from": "侧边导航", "action": "点击「推荐」", "result": "→ 推荐发现页（L1）" },
+    { "from": "侧边导航", "action": "点击「最近」或「收藏」中的股票", "result": "→ 切换至该股票详情页（L1）" },
+    { "from": "侧边导航", "action": "从「最近」拖拽股票到「收藏」", "result": "→ 股票加入收藏分组" },
+    { "from": "侧边导航", "action": "悬浮条目，点击右侧删除图标×2", "result": "→ 条目删除，顶部Toast+撤销（3s）" },
+    { "from": "股票详情页 K线图", "action": "切换时间周期", "result": "→ K线数据更新，AI面板同步切换" },
+    { "from": "股票详情页 AI面板", "action": "切换时间周期下拉", "result": "→ AI摘要卡片更新，K线图同步切换" },
+    { "from": "股票详情页 AI面板", "action": "点击「查看详情」", "result": "→ AI报告弹窗从面板左边缘向左滑出，K线图向左被挤压收缩，侧边导航自动收起" },
+    { "from": "AI分析弹窗", "action": "点击「关闭」或Esc", "result": "→ 弹窗关闭，K线图恢复原始宽度，侧边导航恢复" },
+    { "from": "股票详情页 K线图", "action": "鼠标悬浮关键点", "result": "→ 关键点悬浮卡片出现（Hover Zone生效）" },
+    { "from": "关键点悬浮卡片", "action": "点击「查看详情」", "result": "→ 关键点详情全屏弹窗（L2）" },
+    { "from": "关键点弹窗 左侧时间轴", "action": "点击其他事件块", "result": "→ 右侧内容区切换至对应关键点数据" },
+    { "from": "关键点弹窗 右侧Tab栏右侧", "action": "点击「因果链」入口按钮", "result": "→ 跳转因果链探索页（L3），携带当前关键点为根节点" },
+    { "from": "关键点弹窗 相关新闻", "action": "点击新闻卡片", "result": "→ 就地向下展开新闻详情，点击收起按钮恢复列表" },
+    { "from": "关键点全屏弹窗", "action": "点击关闭/遮罩", "result": "→ 返回股票详情页" },
+    { "from": "因果链探索页 事件节点", "action": "点击事件节点", "result": "→ 以该节点为新焦点，更新因果链视图，面包屑更新" },
+    { "from": "因果链探索页 面包屑", "action": "点击任一层级", "result": "→ 返回对应层级的因果链视图" },
+    { "from": "股票详情页 下半区Tab", "action": "切换日/周/月", "result": "→ 市场情绪和资金流向图表时间范围更新" },
+    { "from": "股票详情页 新闻与政策Tab", "action": "点击新闻/政策卡片", "result": "→ 就地展开详情" },
+    { "from": "股票详情页", "action": "向下滚动", "result": "→ 整页统一滚动，下半区Tab内容随页面滚动显示，无独立内部滚动条" }
+  ],
+
+  "data_spec": {
+    "sources_overview": [
+      { "category": "股票基础信息", "source_type": "静态预置", "demo_impl": "硬编码于stockData.js", "v2_target": "东方财富/同花顺OpenAPI", "refresh": "每日收盘后更新一次" },
+      { "category": "K线行情数据", "source_type": "静态预置", "demo_impl": "硬编码于klineData.js，每只股票至少120根日K", "v2_target": "新浪财经行情接口 / Yahoo Finance", "refresh": "实时推送（Tick级）；日K每日收盘后固化" },
+      { "category": "关键点事件数据", "source_type": "人工标注+静态预置", "demo_impl": "每只股票5-8个关键点，JSON格式", "v2_target": "AI自动抽取+人工审核", "refresh": "事件发生后T+1自动识别，人工24h审核" },
+      { "category": "AI分析报告", "source_type": "人工撰写+静态预置", "demo_impl": "文章长文形态，按日/周/月三份", "v2_target": "GPT-4o / Claude Sonnet API调用", "refresh": "每个周期结束后自动生成，可手动触发重生成" },
+      { "category": "新闻与政策", "source_type": "人工整理+静态预置", "demo_impl": "每只股票5-10条新闻，JSON格式", "v2_target": "财联社/新浪财经新闻API + 爬虫", "refresh": "实时抓取；入库前AI过滤低质内容" },
+      { "category": "市场情绪数据", "source_type": "模拟生成", "demo_impl": "基于随机数种子生成，逻辑自洽", "v2_target": "东方财富投票数据 / 雪球讨论热度", "refresh": "每小时更新一次" },
+      { "category": "资金流向数据", "source_type": "模拟生成", "demo_impl": "模拟主力/大单/中单/小单四级，逻辑自洽", "v2_target": "东方财富Level-2资金数据API", "refresh": "实时推送；日内每分钟聚合，收盘后固化" },
+      { "category": "因果链数据", "source_type": "人工构建+静态预置", "demo_impl": "每只股票至少1条3层链路，JSON格式", "v2_target": "AI因果抽取 + 知识图谱扩展", "refresh": "新关键点识别后T+1人工构建" },
+      { "category": "公司简介", "source_type": "公开信息整理", "demo_impl": "固定文本+图片URL，硬编码", "v2_target": "企业官网/证监会披露平台爬取", "refresh": "每季度更新一次（财报季后）" },
+      { "category": "分析师评级", "source_type": "模拟生成", "demo_impl": "买入/持有/卖出比例，静态数值", "v2_target": "Wind/Bloomberg分析师评级API", "refresh": "每日更新" }
+    ],
+    "kline_fields": [
+      { "field": "date", "type": "string (YYYY-MM-DD)", "desc": "交易日期", "source": "trade_date" },
+      { "field": "open", "type": "number (float, 2位小数)", "desc": "开盘价", "source": "open_price" },
+      { "field": "high", "type": "number (float, 2位小数)", "desc": "最高价，≥open、close", "source": "high_price" },
+      { "field": "low", "type": "number (float, 2位小数)", "desc": "最低价，≤open、close", "source": "low_price" },
+      { "field": "close", "type": "number (float, 2位小数)", "desc": "收盘价", "source": "close_price" },
+      { "field": "volume", "type": "number (integer)", "desc": "成交量（手数），A股以手（100股）为单位", "source": "vol" },
+      { "field": "change_pct", "type": "number (float, 2位小数)", "desc": "涨跌幅（%），如2.35代表+2.35%", "source": "pct_chg" },
+      { "field": "turnover_rate", "type": "number (float, 2位小数, 0-100)", "desc": "换手率", "source": "turnover_rate" },
+      { "field": "market_cap", "type": "number (float, 2位小数)", "desc": "总市值（亿元）", "source": "total_mv" },
+      { "field": "amplitude", "type": "number (float, 2位小数)", "desc": "振幅，(high-low)/pre_close", "source": "amplitude" }
+    ],
+    "kline_volume": { "daily": "每只股票120条（约6个月）", "weekly": "每只股票52条（约1年）", "monthly": "每只股票24条（约2年）" },
+    "sentiment_fields": [
+      { "field": "sentiment_score", "type": "number (0-100, 1位小数)", "desc": "情绪指数，0极度悲观，100极度乐观", "refresh": "Demo静态；V2.0每小时更新" },
+      { "field": "bull_pct", "type": "number (0-100, 1位小数)", "desc": "看多人数比例（%）；bull+bear≤100", "refresh": "同上" },
+      { "field": "bear_pct", "type": "number (0-100, 1位小数)", "desc": "看空人数比例（%）", "refresh": "同上" },
+      { "field": "neutral_pct", "type": "number (0-100, 1位小数)", "desc": "neutral = 100 - bull - bear", "refresh": "同上" },
+      { "field": "heat_index", "type": "number (无量纲)", "desc": "热度指数，相对基准期归一化", "refresh": "每小时更新" },
+      { "field": "heat_change_pct", "type": "number", "desc": "热度同比变化（%）", "refresh": "每小时更新" },
+      { "field": "trend_series", "type": "array<{date, score}>", "desc": "近15日情绪趋势序列", "refresh": "每日收盘后更新" }
+    ],
+    "fund_flow_fields": [
+      { "field": "date", "type": "string (YYYY-MM-DD)", "desc": "日期（工作日）", "refresh": "每日收盘后固化" },
+      { "field": "main_net_flow", "type": "number (亿元, 2位小数)", "desc": "主力净流入（+流入/-流出）", "refresh": "Demo静态；V2.0日内每分钟聚合" },
+      { "field": "big_order_flow", "type": "number (亿元, 2位小数)", "desc": "大单净流入，单笔≥100万", "refresh": "同上" },
+      { "field": "mid_order_flow", "type": "number (亿元, 2位小数)", "desc": "中单净流入，20万≤单笔<100万", "refresh": "同上" },
+      { "field": "small_order_flow", "type": "number (亿元, 2位小数)", "desc": "小单净流入，单笔<20万", "refresh": "同上" },
+      { "field": "main_net_pct", "type": "number (%, 1位小数)", "desc": "主力净流入占总成交额比例", "refresh": "每日收盘后计算" },
+      { "field": "fund_series", "type": "array<{date, main_net_flow}>", "desc": "近15日资金趋势序列", "refresh": "每日更新" }
+    ]
+  },
+
+  "acceptance_criteria": {
+    "note": "✓=必须通过，○=优先级次要可协商推迟",
+    "login_page": [
+      { "id": "L-001", "scenario": "正常登录", "steps": "输入任意11位手机号，点击获取验证码，输入123456，点击登录", "expected": "跳转推荐发现页；侧边导航出现", "priority": "✓" },
+      { "id": "L-002", "scenario": "验证码倒计时", "steps": "点击「获取验证码」按钮", "expected": "按钮进入60秒倒计时，不可重复点击；Toast显示「验证码已发送（Demo：123456）」", "priority": "✓" },
+      { "id": "L-003", "scenario": "按钮置灰逻辑", "steps": "手机号不足11位时点击登录", "expected": "登录按钮处于置灰不可点击状态", "priority": "✓" },
+      { "id": "L-004", "scenario": "错误验证码", "steps": "输入任意非123456的验证码点击登录", "expected": "提示「验证码错误，请重试」，不跳转", "priority": "✓" },
+      { "id": "L-005", "scenario": "微信扫码置灰", "steps": "切换至微信扫码Tab", "expected": "二维码图片opacity≈0.4，下方显示「暂未开放」，不可交互", "priority": "✓" },
+      { "id": "L-006", "scenario": "Tab切换状态保持", "steps": "在手机号Tab输入内容后切换到微信Tab再切回", "expected": "手机号Tab的输入内容保留", "priority": "○" }
+    ],
+    "recommend_page": [
+      { "id": "R-001", "scenario": "精选区展示", "steps": "登录后进入推荐发现页", "expected": "显示3张精选卡片（宁德时代/腾讯控股/英伟达），横向等宽排列", "priority": "✓" },
+      { "id": "R-002", "scenario": "搜索过滤", "steps": "搜索框输入「茅台」", "expected": "瀑布流仅显示贵州茅台卡片；精选区不受影响", "priority": "✓" },
+      { "id": "R-003", "scenario": "代码搜索", "steps": "搜索框输入「NVDA」", "expected": "瀑布流仅显示英伟达卡片", "priority": "✓" },
+      { "id": "R-004", "scenario": "无结果状态", "steps": "搜索框输入「XXXZZZ」", "expected": "瀑布流区域显示空状态图+「未找到相关股票，请尝试其他关键词」", "priority": "✓" },
+      { "id": "R-005", "scenario": "领域筛选", "steps": "点击「新能源」Chip", "expected": "瀑布流仅显示新能源领域股票", "priority": "✓" },
+      { "id": "R-006", "scenario": "市场筛选", "steps": "市场下拉选择「美股」", "expected": "瀑布流仅显示英伟达/苹果/特斯拉3只", "priority": "✓" },
+      { "id": "R-007", "scenario": "复合筛选", "steps": "选择「新能源」+「美股」", "expected": "瀑布流仅显示特斯拉", "priority": "✓" },
+      { "id": "R-008", "scenario": "点击卡片跳转", "steps": "点击任意股票卡片", "expected": "进入该股票详情页；侧边导航「最近」中出现该股票", "priority": "✓" },
+      { "id": "R-009", "scenario": "筛选无结果", "steps": "选择「科技」+「港股」（无此组合）", "expected": "瀑布流显示空状态提示", "priority": "✓" }
+    ],
+    "stock_detail_page": [
+      { "id": "D-001", "scenario": "K线图渲染", "steps": "进入任意股票详情页", "expected": "K线图在1秒内渲染完成；关键点标记正确显示在对应日期位置", "priority": "✓" },
+      { "id": "D-002", "scenario": "关键点颜色", "steps": "查看K线图关键点标记", "expected": "利好标记为绿色菱形，利空为红色，中性为灰色", "priority": "✓" },
+      { "id": "D-003", "scenario": "多关键点聚合", "steps": "找到同日期有多个关键点的位置", "expected": "标记显示最高优先级颜色（利空优先），右上角显示数量角标", "priority": "✓" },
+      { "id": "D-004", "scenario": "悬浮卡片展示", "steps": "鼠标悬浮到关键点标记上", "expected": "200ms内出现悬浮卡片，显示标题/时间/短述/AI标签/查看详情按钮", "priority": "✓" },
+      { "id": "D-005", "scenario": "Hover Zone有效", "steps": "鼠标从关键点缓慢移动到悬浮卡片", "expected": "卡片不消失；鼠标完全离开后300ms才消失", "priority": "✓" },
+      { "id": "D-006", "scenario": "时间周期联动", "steps": "切换K线图时间周期为「周K」", "expected": "K线图更新为周K数据；AI面板时间周期自动切换为「本周」", "priority": "✓" },
+      { "id": "D-007", "scenario": "AI弹窗挤压K线", "steps": "点击AI摘要卡片「查看详情」", "expected": "AI报告弹窗从AI面板左边缘向左滑出并插入；K线图向左被挤压收缩（不是覆盖）；侧边导航自动收起；AI面板保持原位", "priority": "✓" },
+      { "id": "D-008", "scenario": "AI弹窗关闭恢复", "steps": "点击AI弹窗关闭按钮", "expected": "弹窗关闭；K线图恢复原始宽度；侧边导航恢复展开", "priority": "✓" },
+      { "id": "D-009", "scenario": "AI报告文章形态", "steps": "打开AI分析弹窗，查看报告内容", "expected": "报告呈现为文章长文形态，无卡片边框包裹各段落；图表紧接对应段落内联展示", "priority": "✓" },
+      { "id": "D-010", "scenario": "关键点详情弹窗", "steps": "点击悬浮卡片「查看详情」", "expected": "全屏弹窗在约300ms内打开（scale+opacity动画）", "priority": "✓" },
+      { "id": "D-011", "scenario": "弹窗关闭", "steps": "点击弹窗外遮罩区域", "expected": "弹窗关闭，返回股票详情页，页面状态保持", "priority": "✓" },
+      { "id": "D-012", "scenario": "下半区Tab高度", "steps": "进入详情页查看下半区Tab栏", "expected": "Tab栏及初始可见内容约占视口高度1/5；用户下滚可见完整内容；无独立内部滚动条", "priority": "✓" },
+      { "id": "D-013", "scenario": "新闻就地展开", "steps": "点击下半区「新闻与政策」Tab中任意新闻", "expected": "该新闻卡片就地展开显示完整正文；其他新闻保持收起", "priority": "✓" },
+      { "id": "D-014", "scenario": "新闻互斥展开", "steps": "展开一条新闻后点击另一条", "expected": "第一条收起，第二条展开", "priority": "✓" }
+    ],
+    "keypoint_modal": [
+      { "id": "KP-001", "scenario": "弹窗结构", "steps": "打开关键点详情全屏弹窗", "expected": "左侧时间轴≈30%宽，右侧内容区≈70%宽；6个Tab可见", "priority": "✓" },
+      { "id": "KP-002", "scenario": "时间轴切换", "steps": "点击左侧时间轴上的其他关键点", "expected": "右侧内容区切换为对应关键点的数据", "priority": "✓" },
+      { "id": "KP-003", "scenario": "因果链入口", "steps": "点击Tab栏右侧「因果链」按钮", "expected": "跳转到因果链探索页（L3）；URL/路由携带当前关键点ID", "priority": "✓" }
+    ],
+    "causal_chain": [
+      { "id": "CC-001", "scenario": "基本渲染", "steps": "从关键点弹窗进入因果链页", "expected": "正确渲染3层节点布局；顶部面包屑显示股票名称/关键点标题/当前焦点", "priority": "✓" },
+      { "id": "CC-002", "scenario": "节点切换", "steps": "点击非当前焦点的节点", "expected": "该节点成为新焦点，因果链视图更新，面包屑更新", "priority": "✓" },
+      { "id": "CC-003", "scenario": "面包屑返回", "steps": "点击面包屑中的关键点标题", "expected": "返回初始进入状态", "priority": "✓" },
+      { "id": "CC-004", "scenario": "画布拖拽", "steps": "鼠标按住画布拖动", "expected": "因果链画布整体平移", "priority": "○" }
+    ],
+    "sidebar_navigation": [
+      { "id": "N-001", "scenario": "展开/收起", "steps": "点击侧边导航收起/展开按钮", "expected": "宽度平滑过渡；收起态仅显示图标", "priority": "✓" },
+      { "id": "N-002", "scenario": "AI弹窗自动收起", "steps": "打开AI分析弹窗", "expected": "侧边导航自动收起", "priority": "✓" },
+      { "id": "N-003", "scenario": "收藏功能", "steps": "悬浮最近列表中的股票，点击收藏图标", "expected": "该股票出现在收藏分组，保留在最近分组", "priority": "✓" },
+      { "id": "N-004", "scenario": "删除+撤销", "steps": "悬浮条目，点击删除，再次确认", "expected": "条目变红色确认态→删除→Toast+撤销按钮（3秒倒计时）；点撤销恢复", "priority": "✓" },
+      { "id": "N-005", "scenario": "拖拽收藏", "steps": "从最近分组拖拽股票到收藏分组", "expected": "松开后股票加入收藏分组", "priority": "✓" },
+      { "id": "N-006", "scenario": "重复收藏提示", "steps": "拖拽已收藏的股票到收藏分组", "expected": "Toast提示「已在收藏夹中」，不重复添加", "priority": "✓" }
+    ]
+  },
+
+  "state_spec": {
+    "component_states": [
+      { "module": "推荐发现页瀑布流", "state": "加载中", "trigger": "页面首次进入", "visual": "骨架屏（Skeleton）占位，灰色动画", "exit": "数据初始化完成" },
+      { "module": "推荐发现页瀑布流", "state": "筛选结果为空", "trigger": "筛选/搜索条件命中0条", "visual": "空状态插图 + 文案「未找到相关股票」", "exit": "修改筛选条件或清空搜索" },
+      { "module": "K线图", "state": "渲染中", "trigger": "切换时间周期或进入详情页", "visual": "Loading spinner覆盖图表区域", "exit": "图表渲染完成（≤1s）" },
+      { "module": "K线图", "state": "关键点悬浮激活", "trigger": "鼠标进入关键点Hover Zone", "visual": "关键点标记放大+高亮，悬浮卡片出现", "exit": "鼠标离开Hover Zone 300ms后" },
+      { "module": "关键点悬浮卡片", "state": "计时消失中", "trigger": "鼠标离开Hover Zone", "visual": "卡片仍可见，内部300ms计时中", "exit": "300ms内重新进入取消计时；超时后消失" },
+      { "module": "AI分析面板", "state": "默认态（摘要卡片）", "trigger": "进入详情页，或关闭AI弹窗", "visual": "摘要卡片+底部问答输入框", "exit": "点击「查看详情」进入弹窗态" },
+      { "module": "AI分析弹窗", "state": "展开态", "trigger": "点击「查看详情」", "visual": "弹窗从AI面板左边缘向左滑出插入；K线图同步向左收缩；侧边导航自动收起", "exit": "点击「关闭」或按Esc" },
+      { "module": "关键点详情全屏弹窗", "state": "打开中", "trigger": "点击「查看详情」", "visual": "scale+opacity入场动画", "exit": "动画完成后进入就绪态" },
+      { "module": "侧边导航", "state": "展开态", "trigger": "默认 / AI弹窗关闭后", "visual": "宽度约240px（参考值），完整文字", "exit": "点击收起按钮 / 打开AI弹窗" },
+      { "module": "侧边导航", "state": "收起态", "trigger": "点击收起 / AI弹窗打开", "visual": "宽度约60px（参考值），仅图标", "exit": "点击展开按钮 / AI弹窗关闭" },
+      { "module": "侧边导航条目", "state": "删除确认中", "trigger": "第一次点击删除图标", "visual": "条目背景变红色", "exit": "再次点击确认删除，或鼠标移出取消" },
+      { "module": "侧边导航条目", "state": "已删除（可撤销）", "trigger": "第二次点击确认删除", "visual": "条目消失；顶部Toast「已删除（3s）」+ 撤销按钮", "exit": "3s后Toast消失（永久删除）；或点撤销恢复" },
+      { "module": "新闻卡片", "state": "展开态", "trigger": "点击新闻卡片", "visual": "高度从0平滑展开（约200ms ease），完整正文可见", "exit": "点击「收起」按钮" },
+      { "module": "Toast通知", "state": "可见", "trigger": "Toast触发", "visual": "顶部固定位置滑入", "exit": "约3s后自动滑出，或点击关闭" }
+    ],
+    "data_states": [
+      { "entity": "用户Session", "state": "未登录", "handling": "访问任何L1页面均重定向至登录页" },
+      { "entity": "用户Session", "state": "已过期（Demo：关闭浏览器后）", "handling": "重定向至登录页，收藏/最近数据清空" },
+      { "entity": "最近列表", "state": "满（10条）", "handling": "新进入详情页的股票添加到顶部，最底部条目被移除" },
+      { "entity": "因果链数据", "state": "无链路", "handling": "因果链入口按钮置灰，鼠标悬浮提示「暂无因果链数据」" }
+    ],
+    "error_states": [
+      { "error": "图表渲染失败", "trigger": "ECharts初始化异常或数据格式错误", "user_facing": "图表区域显示「数据加载异常，请刷新重试」灰色占位", "handling": "不影响页面其他内容" },
+      { "error": "关键点数据缺失", "trigger": "某关键点缺少必要字段", "user_facing": "对应Tab显示「暂无数据」占位", "handling": "其他Tab不受影响" },
+      { "error": "新闻内容为空", "trigger": "news.content字段为空字符串", "user_facing": "展开后显示「暂无详情内容」灰色文案", "handling": "标题/来源/时间仍正常显示" },
+      { "error": "因果链节点异常", "trigger": "edge指向不存在的node.id", "user_facing": "页面显示「因果链数据异常，请返回重试」+ 返回按钮", "handling": "记录到控制台错误日志，不崩溃页面" },
+      { "error": "Stock ID不存在", "trigger": "URL直接访问不在20只股票内的股票ID", "user_facing": "显示404占位页 + 跳转推荐发现页按钮", "handling": "—" },
+      { "error": "AI问答无匹配", "trigger": "用户输入在预置Q&A库中无关键词命中", "user_facing": "返回通用答案：「这是一个很好的问题，目前我对该股票的AI分析尚在完善中，请参考上方报告。」", "handling": "不报错" },
+      { "error": "验证码错误", "trigger": "输入非123456的验证码", "user_facing": "输入框边框变红 + Toast「验证码错误，请重试」", "handling": "不清空手机号；验证码输入框清空" }
+    ],
+    "global_rules": [
+      "任何弹窗（L2/L3）打开时，背景页面禁止滚动（body overflow: hidden）",
+      "同一时刻只允许一个L2弹窗处于打开状态（AI分析弹窗与关键点全屏弹窗互斥）",
+      "侧边导航的展开/收起状态不随页面跳转重置，保持用户最后操作的状态（Session级）",
+      "AI弹窗关闭后，侧边导航恢复至AI弹窗打开前的状态",
+      "Toast通知全局单例：同一时刻只显示一条Toast，新Toast出现时旧Toast立即消失",
+      "新闻卡片互斥展开：同一时间只允许一条新闻展开，点击另一条时当前展开项先收起"
+    ]
+  },
+
+  "non_functional_requirements": {
+    "performance": [
+      { "metric": "推荐发现页首屏加载", "target": "≤3秒", "note": "含静态数据初始化" },
+      { "metric": "筛选/搜索本地响应", "target": "≤100ms", "note": "本地过滤，无网络请求" },
+      { "metric": "K线图渲染", "target": "≤1秒", "note": "ECharts初始渲染" },
+      { "metric": "AI分析弹窗展开（含K线收缩动画）", "target": "≤200ms", "note": "UI动画参考值，内容已预渲染" },
+      { "metric": "关键点全屏弹窗打开", "target": "≤300ms", "note": "含动画时间" },
+      { "metric": "ECharts图表渲染", "target": "≤500ms", "note": "单图表渲染时间" },
+      { "metric": "新闻就地展开动画", "target": "≤200ms", "note": "height动画时间" }
+    ],
+    "compatibility": {
+      "browsers": ["Chrome 90+", "Firefox 88+", "Safari 14+", "Edge 90+"],
+      "min_screen_width_px": 1280,
+      "mobile": "暂不要求移动端适配"
+    },
+    "accessibility": [
+      "所有交互有明确视觉反馈（Hover、点击、加载状态）",
+      "关键点悬浮卡片有透明热区，防止鼠标移动过程中卡片误消失",
+      "图表配图例和文字说明，避免用户看不懂含义",
+      "颜色满足对比度要求，通过色盲友好测试"
+    ],
+    "compliance": [
+      "页面显眼位置展示：「本平台内容仅供参考，AI分析不构成任何投资建议，投资有风险，入市须谨慎。」",
+      "登录页底部展示合规说明",
+      "Demo阶段不收集任何真实用户数据"
+    ]
+  },
+
+  "roadmap": [
+    { "phase": "V2.0", "feature": "接入第三方财经API，K线图实时数据", "priority": "P0" },
+    { "phase": "V2.0", "feature": "接入新闻API，自动抓取关键点事件", "priority": "P0" },
+    { "phase": "V2.0", "feature": "接入AI接口，动态生成AI分析报告和对话回答", "priority": "P0" },
+    { "phase": "V2.1", "feature": "图表数据实时化（资金流向、市场情绪接真实数据源）", "priority": "P0" },
+    { "phase": "V2.1", "feature": "支持任意股票搜索（远程接口）", "priority": "P0" },
+    { "phase": "V3.0", "feature": "用户账号体系（真实短信验证、微信扫码登录开放、数据持久化）", "priority": "P1" },
+    { "phase": "V3.0", "feature": "收藏/最近数据后端存储", "priority": "P1" },
+    { "phase": "V3.0", "feature": "移动端适配", "priority": "P2" },
+    { "phase": "V3.0", "feature": "个性化推荐（基于用户浏览历史）", "priority": "P2" }
+  ],
+
+  "data_dictionary": {
+    "User": {
+      "fields": [
+        { "field": "user_id", "type": "string", "required": true, "desc": "手机号作为ID，11位数字字符串", "note": "Demo阶段用手机号直接作为唯一标识" },
+        { "field": "phone", "type": "string", "required": true, "desc": "11位手机号，仅含数字" },
+        { "field": "login_time", "type": "string (ISO 8601)", "required": true, "desc": "最近登录时间", "note": "登录成功时写入Session" },
+        { "field": "favorites", "type": "array<string>", "required": false, "desc": "收藏的stock_id数组，顺序即收藏先后顺序", "note": "Session级存储；刷新后重置为[]" },
+        { "field": "recents", "type": "array<string>", "required": false, "desc": "最近访问stock_id数组，倒序排列，最多10条", "note": "新访问的stock_id追加到数组头部；超10条时移除尾部" }
+      ]
+    },
+    "Stock": {
+      "fields": [
+        { "field": "stock_id", "type": "string", "required": true, "desc": "股票代码，A股6位数字，港股5位数字带前导0，美股大写字母", "note": "主键，唯一标识" },
+        { "field": "name", "type": "string", "required": true, "desc": "股票中文名称，≤10字" },
+        { "field": "name_en", "type": "string", "required": false, "desc": "股票英文名称，≤30字符", "note": "主要用于美股、港股展示" },
+        { "field": "market", "type": "enum", "required": true, "values": ["A股", "港股", "美股"], "desc": "影响筛选和标签展示" },
+        { "field": "sector", "type": "enum", "required": true, "values": ["科技", "新能源", "半导体", "消费", "医药", "金融", "能源"], "desc": "影响领域筛选Chip" },
+        { "field": "is_featured", "type": "boolean", "required": true, "desc": "true=出现在Select for You精选区", "note": "全局只允许3条is_featured=true" },
+        { "field": "featured_reason", "type": "string", "required": "conditional", "desc": "精选理由，≤60字", "note": "is_featured=true时必填" },
+        { "field": "hot_score", "type": "integer (0-100)", "required": true, "desc": "热门分值，用于「热门」排序", "note": "手动维护，值越大越靠前" },
+        { "field": "current_price", "type": "number (float, 2位小数)", "required": true, "desc": "当前价格", "note": "A股/港股：元；美股：美元" },
+        { "field": "prev_close", "type": "number (float, 2位小数)", "required": true, "desc": "昨收价，用于计算涨跌额和涨跌幅" },
+        { "field": "change_amount", "type": "number (float, 2位小数)", "required": true, "desc": "涨跌额 = current_price - prev_close" },
+        { "field": "change_pct", "type": "number (float, 2位小数)", "required": true, "desc": "涨跌幅（%），如2.35表示+2.35%", "note": "正红负绿" },
+        { "field": "market_cap", "type": "number (float, 2位小数)", "required": true, "desc": "总市值，亿元（A股/港股）/ 亿美元（美股）" },
+        { "field": "pe_ratio", "type": "number (float, 2位小数)", "required": false, "desc": "市盈率（P/E TTM），可为负", "note": "亏损公司为负值，展示时显示「-」" },
+        { "field": "pb_ratio", "type": "number (float, 2位小数)", "required": false, "desc": "市净率（P/B）" },
+        { "field": "eps", "type": "number (float, 2位小数)", "required": false, "desc": "每股收益（EPS TTM），单位同货币" },
+        { "field": "dividend_yield", "type": "number (float, 2位小数)", "required": false, "desc": "股息率（%）", "note": "无分红则为0" },
+        { "field": "kline_data", "type": "object", "required": true, "desc": "{ daily: KlineBar[], weekly: KlineBar[], monthly: KlineBar[] }" },
+        { "field": "key_points", "type": "array<string>", "required": true, "desc": "key_point_id数组，按日期倒序排列" },
+        { "field": "company_info", "type": "object", "required": true, "desc": "{ founded, business, products, team, track, logo_url, images }" },
+        { "field": "ai_report", "type": "object", "required": true, "desc": "{ daily: ReportContent, weekly: ReportContent, monthly: ReportContent }", "note": "ReportContent含文章长文内容字符串和chart_data对象" },
+        { "field": "market_sentiment_data", "type": "object", "required": true, "desc": "股票整体维度市场情绪数据" },
+        { "field": "fund_flow_data", "type": "object", "required": true, "desc": "股票整体维度资金流向数据" },
+        { "field": "news", "type": "array<News>", "required": true, "desc": "按publish_time倒序排列，含新闻和政策两种type" }
+      ]
+    },
+    "KeyPoint": {
+      "fields": [
+        { "field": "key_point_id", "type": "string", "required": true, "desc": "格式：KP_{stock_id}_{三位序号}，如KP_600519_001", "note": "全局唯一主键" },
+        { "field": "stock_id", "type": "string", "required": true, "desc": "所属股票代码，必须在Stock表中存在", "note": "外键引用" },
+        { "field": "title", "type": "string", "required": true, "desc": "关键点标题，≤30字，不含HTML标签" },
+        { "field": "date", "type": "string (YYYY-MM-DD)", "required": true, "desc": "关键点日期，应为有效交易日或事件日期" },
+        { "field": "short_desc", "type": "string", "required": true, "desc": "核心事件短述，≤50字，面向非专业用户的白话文" },
+        { "field": "ai_label", "type": "enum", "required": true, "values": ["利好", "利空", "中性"], "desc": "影响关键点颜色和筛选" },
+        { "field": "priority", "type": "integer (1-3)", "required": true, "desc": "1=利空（最高），2=利好，3=中性（最低）", "note": "同日期多关键点聚合时取最小priority" },
+        { "field": "ai_summary", "type": "object", "required": true, "desc": "{ content: string（文章形态）, chart_data: object }", "note": "关键点弹窗「AI总结」Tab内容" },
+        { "field": "data_snapshot", "type": "object", "required": true, "desc": "含volume_series, turnover_series, market_cap_series, pe_ratio, pb_ratio, industry_pe" },
+        { "field": "related_news", "type": "array<News>", "required": true, "desc": "关联新闻，2-5条，每条必须包含完整content字段" },
+        { "field": "fund_flow_kp", "type": "object", "required": true, "desc": "该关键点时段（±10日）的资金流向数据" },
+        { "field": "sentiment_kp", "type": "object", "required": true, "desc": "该关键点时段的市场情绪数据" },
+        { "field": "causal_chain", "type": "object | null", "required": false, "desc": "CausalChain类型，含nodes和edges数组", "note": "无因果链时置null；入口按钮置灰" }
+      ]
+    },
+    "News": {
+      "fields": [
+        { "field": "news_id", "type": "string", "required": true, "desc": "格式：NEWS_{stock_id}_{三位序号}，如NEWS_NVDA_001" },
+        { "field": "title", "type": "string", "required": true, "desc": "新闻完整标题，≤100字" },
+        { "field": "source", "type": "string", "required": true, "desc": "来源媒体名称，如：新华社、财联社、彭博社、路透社" },
+        { "field": "source_url", "type": "string", "required": false, "desc": "原文链接，有效URL。Demo可填真实链接或「#」" },
+        { "field": "publish_time", "type": "string (ISO 8601 YYYY-MM-DDTHH:mm:ss)", "required": true, "desc": "发布时间，列表按此字段倒序排列" },
+        { "field": "summary", "type": "string", "required": true, "desc": "摘要文本，≤100字，用于列表态2行截断展示" },
+        { "field": "content", "type": "string", "required": true, "desc": "完整正文，段落间用\\n\\n分隔，最大5000字", "note": "就地展开时展示；必须有实质内容" },
+        { "field": "type", "type": "enum", "required": true, "values": ["news", "policy"], "desc": "影响「新闻与政策」Tab的子分类筛选" },
+        { "field": "related_stocks", "type": "array<string>", "required": true, "desc": "关联stock_id数组，一条新闻可关联多只股票" },
+        { "field": "ai_label", "type": "enum", "required": false, "values": ["利好", "利空", "中性", "无"], "desc": "对关联股票的影响判断" }
+      ]
+    },
+    "CausalChain": {
+      "fields": [
+        { "field": "chain_id", "type": "string", "required": true, "desc": "格式：CC_{stock_id}_{三位序号}，如CC_NVDA_001" },
+        { "field": "root_key_point_id", "type": "string", "required": true, "desc": "触发进入因果链的关键点ID" },
+        { "field": "nodes", "type": "array<ChainNode>", "required": true, "desc": "所有事件节点列表，最少3个节点（每层至少1个）" },
+        { "field": "node.id", "type": "string", "required": true, "desc": "节点唯一ID，链内唯一，如N001" },
+        { "field": "node.title", "type": "string", "required": true, "desc": "事件标题，≤30字" },
+        { "field": "node.date", "type": "string", "required": true, "desc": "事件日期或区间，允许模糊（如2024-Q1）" },
+        { "field": "node.content", "type": "string", "required": true, "desc": "事件内容摘要，≤80字" },
+        { "field": "node.layer", "type": "integer", "required": true, "values": [0, 1, 2, 3], "desc": "0=结果事件，1=底层，2=中间层，3=顶层根节点" },
+        { "field": "node.x_position", "type": "integer (0起始)", "required": true, "desc": "同层节点的水平排列序号，0为最左；同layer内不重复" },
+        { "field": "node.is_focal", "type": "boolean", "required": true, "desc": "是否为进入时的初始焦点节点", "note": "全链只允许1个节点is_focal=true" },
+        { "field": "edges", "type": "array<ChainEdge>", "required": true, "desc": "因果连接关系列表" },
+        { "field": "edge.from", "type": "string", "required": true, "desc": "上游节点ID（原因侧），必须存在于nodes" },
+        { "field": "edge.to", "type": "string", "required": true, "desc": "下游节点ID（结果侧），必须存在于nodes" },
+        { "field": "edge.type", "type": "enum", "required": true, "values": ["direct", "indirect"], "desc": "直接因果关系 / 间接关联" }
+      ]
+    },
+    "enums": {
+      "Market": ["A股", "港股", "美股"],
+      "Sector": ["科技", "新能源", "半导体", "消费", "医药", "金融", "能源"],
+      "AiLabel": ["利好", "利空", "中性"],
+      "NewsAiLabel": ["利好", "利空", "中性", "无"],
+      "NewsType": ["news", "policy"],
+      "KlinePeriod": ["daily", "weekly", "monthly"],
+      "AiReportPeriod": ["daily", "weekly", "monthly"],
+      "SortOrder": ["hot", "event_count", "gain_desc", "loss_desc"],
+      "SentimentLevel": ["extreme_bear", "bear", "neutral", "bull", "extreme_bull"],
+      "EdgeType": ["direct", "indirect"],
+      "FundOrderSize": ["main", "big", "mid", "small"]
+    }
+  },
+
+  "demo_data": {
+    "stock_list": [
+      { "no": 1, "name": "贵州茅台", "code": "600519", "market": "A股", "sector": "消费", "is_featured": false, "ref_price": 1688.00, "ref_change_pct": "+1.23%" },
+      { "no": 2, "name": "宁德时代", "code": "300750", "market": "A股", "sector": "新能源", "is_featured": true, "ref_price": 218.50, "ref_change_pct": "+2.86%" },
+      { "no": 3, "name": "中芯国际", "code": "688981", "market": "A股", "sector": "半导体", "is_featured": false, "ref_price": 83.40, "ref_change_pct": "-0.48%" },
+      { "no": 4, "name": "比亚迪", "code": "002594", "market": "A股", "sector": "新能源", "is_featured": false, "ref_price": 287.60, "ref_change_pct": "+1.55%" },
+      { "no": 5, "name": "招商银行", "code": "600036", "market": "A股", "sector": "金融", "is_featured": false, "ref_price": 42.30, "ref_change_pct": "+0.71%" },
+      { "no": 6, "name": "迈瑞医疗", "code": "300760", "market": "A股", "sector": "医药", "is_featured": false, "ref_price": 268.00, "ref_change_pct": "+0.90%" },
+      { "no": 7, "name": "隆基绿能", "code": "601012", "market": "A股", "sector": "新能源", "is_featured": false, "ref_price": 24.50, "ref_change_pct": "-1.21%" },
+      { "no": 8, "name": "中国平安", "code": "601318", "market": "A股", "sector": "金融", "is_featured": false, "ref_price": 48.80, "ref_change_pct": "+0.62%" },
+      { "no": 9, "name": "东方财富", "code": "300059", "market": "A股", "sector": "科技", "is_featured": false, "ref_price": 18.90, "ref_change_pct": "+3.28%" },
+      { "no": 10, "name": "海天味业", "code": "603288", "market": "A股", "sector": "消费", "is_featured": false, "ref_price": 38.60, "ref_change_pct": "+0.52%" },
+      { "no": 11, "name": "恒瑞医药", "code": "600276", "market": "A股", "sector": "医药", "is_featured": false, "ref_price": 45.20, "ref_change_pct": "-0.22%" },
+      { "no": 12, "name": "立讯精密", "code": "002475", "market": "A股", "sector": "科技", "is_featured": false, "ref_price": 37.80, "ref_change_pct": "+1.88%" },
+      { "no": 13, "name": "兴业银行", "code": "601166", "market": "A股", "sector": "金融", "is_featured": false, "ref_price": 24.10, "ref_change_pct": "+0.42%" },
+      { "no": 14, "name": "中国神华", "code": "601088", "market": "A股", "sector": "能源", "is_featured": false, "ref_price": 38.50, "ref_change_pct": "+0.78%" },
+      { "no": 15, "name": "腾讯控股", "code": "00700", "market": "港股", "sector": "科技", "is_featured": true, "ref_price": 413.20, "ref_price_currency": "HKD", "ref_change_pct": "+1.37%" },
+      { "no": 16, "name": "美团", "code": "03690", "market": "港股", "sector": "消费", "is_featured": false, "ref_price": 135.60, "ref_price_currency": "HKD", "ref_change_pct": "-0.66%" },
+      { "no": 17, "name": "比亚迪（港）", "code": "01211", "market": "港股", "sector": "新能源", "is_featured": false, "ref_price": 263.40, "ref_price_currency": "HKD", "ref_change_pct": "+1.08%" },
+      { "no": 18, "name": "英伟达", "code": "NVDA", "market": "美股", "sector": "半导体", "is_featured": true, "ref_price": 875.40, "ref_price_currency": "USD", "ref_change_pct": "+2.14%" },
+      { "no": 19, "name": "苹果", "code": "AAPL", "market": "美股", "sector": "科技", "is_featured": false, "ref_price": 169.80, "ref_price_currency": "USD", "ref_change_pct": "+0.93%" },
+      { "no": 20, "name": "特斯拉", "code": "TSLA", "market": "美股", "sector": "新能源", "is_featured": false, "ref_price": 172.50, "ref_price_currency": "USD", "ref_change_pct": "-1.42%" }
+    ],
+    "note": "以上价格和涨跌幅为Demo参考演示值，非实时数据，仅保证逻辑自洽（涨红跌绿）",
+    "featured_reasons": [
+      { "stock": "宁德时代（300750）", "reason": "全球动力电池出货量连续7年第一，新一代钠离子电池量产在即，海外建厂提速，估值已回落至历史中枢区间。" },
+      { "stock": "腾讯控股（00700）", "reason": "微信月活14亿稳定增长，游戏出海与视频号商业化双引擎发力，港股回购规模创历史新高，基本面与估值双双改善。" },
+      { "stock": "英伟达（NVDA）", "reason": "Blackwell架构GPU供不应求，AI算力基础设施投资持续加码，FY2025营收指引超预期，科技巨头资本开支扩张直接受益。" }
+    ],
+    "keypoint_count_spec": [
+      { "stock": "英伟达（NVDA）", "count": 8, "types": "利好×4，利空×2，中性×2", "causal_chains": 2 },
+      { "stock": "宁德时代（300750）", "count": 7, "types": "利好×3，利空×2，中性×2", "causal_chains": 1 },
+      { "stock": "腾讯控股（00700）", "count": 6, "types": "利好×3，利空×2，中性×1", "causal_chains": 1 },
+      { "stock": "贵州茅台（600519）", "count": 5, "types": "利好×2，利空×2，中性×1", "causal_chains": 1 },
+      { "stock": "比亚迪（002594）", "count": 6, "types": "利好×3，利空×2，中性×1", "causal_chains": 1 },
+      { "stock": "其余15只股票", "count": 5, "types": "各类型至少1个", "causal_chains": 1 }
+    ],
+    "causal_chain_example": {
+      "chain_id": "CC_NVDA_001",
+      "stock": "英伟达（NVDA）",
+      "description": "以「美对华芯片出口管制升级」为根节点，展示3层因果链结构",
+      "nodes": [
+        { "id": "N001", "layer": 3, "x_position": 0, "title": "美对华芯片出口管制升级", "date": "2023-10", "content": "美国商务部更新出口管制规则，将H800/A800加入限制清单，中国数据中心客户无法采购NVIDIA高端GPU", "is_focal": false },
+        { "id": "N002", "layer": 2, "x_position": 0, "title": "数据中心业务格局重构", "date": "2023-11", "content": "中国市场营收占比从原25%大幅压缩，NVIDIA被迫推出H20等特供版本，高性能计算市场竞争格局发生变化", "is_focal": true },
+        { "id": "N003", "layer": 1, "x_position": 0, "title": "华为昇腾填补市场空缺", "date": "2024-Q1", "content": "国内AI企业加速采购华为昇腾910B，华为AI芯片订单量同比增长300%以上", "is_focal": false },
+        { "id": "N004", "layer": 1, "x_position": 1, "title": "美欧盟友市场需求激增", "date": "2024-Q1", "content": "中国限制导致欧美日本等地区数据中心加快抢购NVIDIA芯片，订单积压创历史纪录", "is_focal": false },
+        { "id": "N005", "layer": 0, "x_position": 0, "title": "NVIDIA全球营收超预期增长", "date": "2024-Q2", "content": "美国等非中国市场强劲弥补中国损失，FY2024Q3数据中心营收同比增长279%，股价创历史新高", "is_focal": false }
+      ],
+      "edges": [
+        { "from": "N001", "to": "N002", "type": "direct" },
+        { "from": "N002", "to": "N003", "type": "direct" },
+        { "from": "N002", "to": "N004", "type": "direct" },
+        { "from": "N003", "to": "N005", "type": "indirect" },
+        { "from": "N004", "to": "N005", "type": "direct" }
+      ]
+    },
+    "ai_qa_presets": [
+      { "id": "Q-01", "keywords": ["涨", "为什么涨", "上涨原因"], "answer_summary": "结合当前关键点分析近期利好因素，引用AI报告中的影响因素章节" },
+      { "id": "Q-02", "keywords": ["跌", "为什么跌", "下跌原因"], "answer_summary": "结合近期利空关键点分析，提示风险因素，引用AI报告风险章节" },
+      { "id": "Q-03", "keywords": ["买不买", "能买吗", "值得投资"], "answer_summary": "声明不构成投资建议，引导用户参考AI分析报告，强调免责声明" },
+      { "id": "Q-04", "keywords": ["市盈率", "PE", "估值"], "answer_summary": "展示当前PE值，与行业均值及5年历史均值对比，给出估值高低判断描述" },
+      { "id": "Q-05", "keywords": ["关键事件", "最近发生了什么"], "answer_summary": "列出最近3个关键点的标题和日期，引导用户点击关键点查看详情" },
+      { "id": "Q-06", "keywords": ["资金", "主力", "机构"], "answer_summary": "引用资金流向数据，描述近5日主力净流入趋势" },
+      { "id": "Q-07", "keywords": ["技术", "支撑位", "压力位"], "answer_summary": "引用AI报告中的技术分析部分，给出支撑位和压力位区间描述" },
+      { "id": "DEFAULT", "keywords": [], "answer_summary": "这是一个很好的问题，目前我对该股票的AI分析尚在完善中，请参考上方报告中的详细分析。如有投资决策需求，请咨询专业投资顾问。" }
+    ]
+  },
+
+  "analytics": {
+    "optional": true,
+    "note": "Demo阶段不强制接入埋点，如需收集用户行为数据用于产品迭代验证可参考本方案",
+    "recommended_tools": ["Mixpanel", "Google Analytics 4", "自建埋点"],
+    "data_format": "Event Name + Properties (key-value) + Timestamp + User ID（手机号MD5哈希）",
+    "privacy": "Demo阶段建议匿名化用户ID；不采集真实个人信息",
+    "events_p0": [
+      { "event": "user_login", "trigger": "用户登录成功", "properties": ["method", "timestamp"] },
+      { "event": "page_view", "trigger": "进入任意L1页面", "properties": ["page", "stock_id"] },
+      { "event": "stock_click", "trigger": "点击股票卡片进入详情页", "properties": ["stock_id", "stock_name", "source", "sector", "market"] },
+      { "event": "kline_period_change", "trigger": "切换K线时间周期", "properties": ["stock_id", "from_period", "to_period"] },
+      { "event": "keypoint_hover", "trigger": "鼠标悬浮关键点标记", "properties": ["stock_id", "key_point_id", "ai_label", "date"] },
+      { "event": "keypoint_detail_open", "trigger": "打开关键点详情全屏弹窗", "properties": ["stock_id", "key_point_id", "ai_label"] },
+      { "event": "ai_report_open", "trigger": "打开AI分析弹窗", "properties": ["stock_id", "period"] },
+      { "event": "causal_chain_enter", "trigger": "进入因果链探索页", "properties": ["stock_id", "key_point_id", "chain_id"] }
+    ],
+    "events_p1": [
+      { "event": "keypoint_tab_switch", "trigger": "关键点弹窗内切换Tab", "properties": ["stock_id", "key_point_id", "tab_name", "prev_tab"] },
+      { "event": "news_expand", "trigger": "展开新闻就地详情", "properties": ["stock_id", "news_id", "news_type", "location"] },
+      { "event": "ai_qa_submit", "trigger": "提交AI问答", "properties": ["stock_id", "query_length", "matched_qa_id"] },
+      { "event": "causal_node_click", "trigger": "点击因果链节点", "properties": ["chain_id", "node_id", "node_layer", "is_focal_change"] },
+      { "event": "filter_apply", "trigger": "应用筛选条件", "properties": ["sector", "market", "sort_order", "result_count"] },
+      { "event": "search_input", "trigger": "搜索框提交查询", "properties": ["query", "result_count", "location"] },
+      { "event": "favorite_add", "trigger": "收藏股票", "properties": ["stock_id", "source"] },
+      { "event": "scroll_depth", "trigger": "页面滚动达到关键深度", "properties": ["stock_id", "depth_pct", "reached_section"] }
+    ],
+    "events_p2": [
+      { "event": "chart_render_time", "trigger": "图表渲染完成", "properties": ["chart_type", "stock_id", "render_ms"] },
+      { "event": "modal_open_time", "trigger": "弹窗打开完成", "properties": ["modal_type", "open_ms"] },
+      { "event": "error_occurrence", "trigger": "捕获到前端错误", "properties": ["error_type", "error_message", "page", "component"] },
+      { "event": "session_duration", "trigger": "用户离开页面（beforeunload）", "properties": ["total_seconds", "pages_visited", "stocks_viewed"] }
+    ],
+    "conversion_funnels": [
+      {
+        "name": "核心探索漏斗",
+        "steps": ["登录", "进入推荐页", "点击股票详情", "打开关键点弹窗", "进入因果链"],
+        "targets": { "step3_to_4": "≥40%", "step4_to_5": "≥20%" }
+      },
+      {
+        "name": "AI功能漏斗",
+        "steps": ["进入详情页", "查看AI摘要", "打开AI全文报告", "提交AI问答"],
+        "targets": { "step2_to_3": "≥30%", "step3_to_4": "≥15%" }
+      },
+      {
+        "name": "收藏留存漏斗",
+        "steps": ["进入详情页", "加入最近", "手动收藏"],
+        "targets": { "step2_to_3": "≥10%" }
+      }
+    ]
+  }
+}
